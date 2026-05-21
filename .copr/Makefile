@@ -10,8 +10,8 @@ srpm:
 	sed -i "s/^%global cdate  .*/%global cdate  $$cdate/" $(spec) ; \
 	spectool -g -S -C $(outdir) $(spec) ; \
 	rpmbuild -bs \
-	  --define "_sourcedir $(outdir)" \
-	  --define "_specdir   $(CURDIR)" \
-	  --define "_srcrpmdir $(outdir)" \
-	  --define "dist %{nil}" \
-	  $(spec)
+	--define "_sourcedir $(outdir)" \
+	--define "_specdir   $(CURDIR)" \
+	--define "_srcrpmdir $(outdir)" \
+	--define "dist %{nil}" \
+	$(spec)

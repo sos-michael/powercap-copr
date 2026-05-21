@@ -49,18 +49,17 @@ building against libpowercap.
 %doc README.md AUTHORS RELEASES.md
 %{_bindir}/powercap-info
 %{_bindir}/powercap-set
+%{_bindir}/rapl-info
+%{_bindir}/rapl-set
 %{_libdir}/libpowercap.so.0
 %{_libdir}/libpowercap.so.%{version}
 %{_mandir}/man1/powercap-info.1*
 %{_mandir}/man1/powercap-set.1*
-%{_mandir}/man3/*.3*
+%{_mandir}/man1/rapl-info.1*
+%{_mandir}/man1/rapl-set.1*
 
 %files devel
 %{_includedir}/%{name}/
 %{_libdir}/libpowercap.so
 %{_libdir}/pkgconfig/powercap.pc
 %{_libdir}/cmake/powercap/
-
-%changelog
-* Wed May 20 2026 sos-michael <noreply@example.com> - 0.6.1-0
-- Initial snapshot packaging of github.com/powercap/powercap master.

@@ -1,14 +1,15 @@
 %global commit  REPLACED_AT_SRPM_TIME
 %global cdate   REPLACED_AT_SRPM_TIME
-%global shortc  %(c=%{commit}; echo ${c:0:7})
+%global shortc  REPLACED_AT_SRPM_TIME
+%global upstream_version REPLACED_AT_SRPM_TIME
 
 Name:           powercap
-Version:        0.6.1
-Release:        0.%{cdate}git%{shortc}%{?dist}
+Version:        %{upstream_version}^%{cdate}git%{shortc}
+Release:        1%{?dist}
 Summary:        C bindings to the Linux Power Capping Framework in sysfs
 License:        BSD-3-Clause
 URL:            https://github.com/powercap/powercap
-Source0:        %{url}/archive/%{commit}/%{name}-%{shortc}.tar.gz
+Source0:        %{name}-%{commit}.tar.gz
 
 BuildRequires:  gcc
 BuildRequires:  cmake >= 3.12
@@ -16,11 +17,11 @@ BuildRequires:  make
 
 %description
 A generic C interface to the Linux power capping framework (sysfs),
-introduced in Linux 3.13. Ships libpowercap plus two utilities:
+introduced in Linux 3.13. Ships libpowercap and the utilities
 powercap-info (inspect control-type hierarchies and zone/constraint
 state) and powercap-set (toggle zones, set power limits and time
-windows). The library also exposes a powercap-rapl API for managing
-Intel RAPL (Running Average Power Limit).
+windows), plus rapl-info and rapl-set for Intel RAPL (Running Average
+Power Limit). The library also exposes a powercap-rapl API.
 
 Snapshot of upstream master at %{shortc} (%{cdate}).
 
@@ -44,6 +45,9 @@ building against libpowercap.
 
 %ldconfig_scriptlets
 
+%check
+%ctest
+
 %files
 %license LICENSE
 %doc README.md AUTHORS RELEASES.md
@@ -51,8 +55,7 @@ building against libpowercap.
 %{_bindir}/powercap-set
 %{_bindir}/rapl-info
 %{_bindir}/rapl-set
-%{_libdir}/libpowercap.so.0
-%{_libdir}/libpowercap.so.%{version}
+%{_libdir}/libpowercap.so.*
 %{_mandir}/man1/powercap-info.1*
 %{_mandir}/man1/powercap-set.1*
 %{_mandir}/man1/rapl-info.1*

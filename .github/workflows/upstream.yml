@@ -1,0 +1,64 @@
+name: Weekly PowerCap RPM updates
+
+on:
+  schedule:
+    - cron: '23 14 * * 1'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Rebuild even if upstream is unchanged
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - powercap.spec
+      - '.copr/**'
+      - '.github/workflows/upstream.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: powercap-copr
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Install COPR client and run scheduler tests
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install copr-cli==2.6 copr==2.7
+          .venv/bin/python -m unittest discover -s .copr -p 'test_*.py' -v
+      - name: Check upstream and build if needed
+        env:
+          COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
+          FORCE: ${{ github.event_name == 'push' || inputs.force == true }}
+        run: |
+          test -n "$COPR_CONFIG" || { echo 'Missing COPR_CONFIG repository secret'; exit 1; }
+          mkdir -p ~/.config
+          umask 077
+          printf '%s\n' "$COPR_CONFIG" > ~/.config/copr
+          args=()
+          if [[ "$FORCE" == true ]]; then args+=(--force); fi
+          .venv/bin/python .copr/check_upstream.py "${args[@]}"
+      - name: Keep the weekly schedule active during quiet upstream periods
+        if: success() && github.event_name == 'schedule'
+        run: |
+          month=$(date -u +%Y-%m)
+          previous=$(cat .github/last-scheduled-check 2>/dev/null || true)
+          if [[ "$month" != "$previous" ]]; then
+            printf '%s\n' "$month" > .github/last-scheduled-check
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add .github/last-scheduled-check
+            git commit -m 'Record monthly upstream check to keep scheduling active'
+            git push
+          fi
+      - name: Remove temporary credentials
+        if: always()
+        run: rm -f ~/.config/copr
